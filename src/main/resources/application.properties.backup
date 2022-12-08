@@ -1,0 +1,10 @@
+spring.batch.initialize-schema=always
+
+spring.datasource.platform=postgres
+spring.datasource.initialization-mode=always
+spring.datasource.url=jdbc:postgresql://localhost:5432/quarkus_test
+spring.datasource.username=postgres
+spring.datasource.password=1234
+
+spring.profiles.active=@spring.profiles.active@
+

@@ -7,11 +7,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SpratchApplication {
 
 	public static void main(String[] args) {
-		System.exit(
-			SpringApplication.exit(
+		 System.exit(
+		 	SpringApplication.exit(
 				SpringApplication.run(SpratchApplication.class, args)
-			)
-		);
+		 	)
+		 );
 	}
 
 }
