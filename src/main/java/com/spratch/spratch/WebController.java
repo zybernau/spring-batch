@@ -57,17 +57,22 @@ public class WebController {
 
     @GetMapping("/start")
     public String initBatch() throws Exception {
+        String status = "Start Batch \n";
         try {
+            log.info("Current Thread @ init: " + Thread.currentThread().getName());
+            status += "\n";
+            status += stopPreviousBatch()?" Stopped previous job" : " no previous jobs running";
             JobParameters jobParameters = new JobParametersBuilder()
                     .addLong("batchId", System.currentTimeMillis())
                     .toJobParameters();
 
             getJobLauncher().run(batchJob, jobParameters);
+            status += "\n Batch Started";
         } catch(Exception ex) {
             log.error(ex.getMessage());
-            return "batch errored";
+            status += "\n Batched Erred ";
         }
-        return "batch started";
+        return status;
     }
 
 
@@ -87,8 +92,12 @@ public class WebController {
 
     @GetMapping("/stop")
     public String checkAndStopBatch() throws NoSuchJobExecutionException, JobExecutionNotRunningException {
+        log.info("Current Thread @ stop :" + Thread.currentThread().getName());
 
-        // check if job is running.
+        return stopPreviousBatch()? "Stopped batch" : "no jobs running !!!";
+    }
+
+    private Boolean stopPreviousBatch() {
         try {
             Set<JobExecution> jobs = jobExplorer.findRunningJobExecutions("batchJobBean");
             log.info("into stop batch call.");
@@ -101,14 +110,13 @@ public class WebController {
                 je.setExitStatus(ExitStatus.STOPPED);
                 jobRepository.update(je);
                 Thread.currentThread().interrupt();
-                return "jobs stopped running !!!";
+                return true;
             }
         } catch(Exception ex) {
             log.error(ex.getMessage());
-            return "exception happen";
+            return false;
         }
-
-        return "no jobs running !!!";
+        return false;
     }
 
 }

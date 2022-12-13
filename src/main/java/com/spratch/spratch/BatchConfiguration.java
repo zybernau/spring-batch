@@ -1,11 +1,17 @@
 package com.spratch.spratch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.NonTransientResourceException;
+import org.springframework.batch.item.ParseException;
+import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
@@ -23,6 +29,11 @@ import javax.sql.DataSource;
 @Configuration
 @EnableBatchProcessing
 public class BatchConfiguration {
+
+	private static final Logger log = LoggerFactory.getLogger(WebController.class);
+
+	@Autowired
+	private MadWait madWhat;
 
 	@Autowired
 	public JobBuilderFactory jobBuilderFactory;
@@ -43,6 +54,30 @@ public class BatchConfiguration {
 				setTargetType(Person.class);
 			}})
 			.build();
+	}
+
+	@Bean
+	public ItemReader<Person> normalReader() {
+//		return new ItemReader<Person>() {
+//			@Override
+//			public Person read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
+//				Person person = new Person();
+//				person.setFirstName("Rajamohan");
+//				person.setLastName("Manivannan");
+//				log.info("Current Thread @ normal reader: " + Thread.currentThread().getName());
+
+//				return person;
+//			}
+//		};
+		return new ItemReader<Person>() {
+			@Override
+			public Person read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
+				log.info("Starts waiting...");
+				madWhat.waiter();
+				log.info("Stops waiting.");
+				return null;
+			}
+		};
 	}
 
 	@Bean
@@ -89,7 +124,7 @@ public class BatchConfiguration {
 	public Step step2(JdbcBatchItemWriter<Person> writer) {
 		return stepBuilderFactory.get("step2")
 				.<Person, Person> chunk(10)
-				.reader(reader())
+				.reader(normalReader())
 				.processor(processor())
 				.writer(writer)
 				.build();

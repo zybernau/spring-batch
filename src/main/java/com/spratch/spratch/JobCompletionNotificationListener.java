@@ -31,13 +31,7 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
 					rs.getString(1),
 					rs.getString(3))
 			).forEach(person -> log.info("Found <" + person + "> in the database."));
-			log.info("Starts waiting...");
-			try {
-				Thread.sleep(60000);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-			log.info("Stops waiting.");
+
 		}
 	}
 
